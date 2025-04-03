@@ -1,6 +1,24 @@
 import os
+import sys
+import importlib
 from flask import Flask, request, send_file, render_template_string
 import torch
+import torchvision
+
+# Monkey patch for compatibility with newer torchvision versions
+if not hasattr(torchvision.transforms, 'functional_tensor'):
+    # Create a compatibility module
+    import types
+    from torchvision.transforms import functional as F
+    
+    # Add rgb_to_grayscale function to the module
+    functional_tensor = types.ModuleType('torchvision.transforms.functional_tensor')
+    functional_tensor.rgb_to_grayscale = F.rgb_to_grayscale
+    
+    # Add the module to sys.modules
+    sys.modules['torchvision.transforms.functional_tensor'] = functional_tensor
+
+# Now import the Real-ESRGAN modules
 from basicsr.archs.rrdbnet_arch import RRDBNet
 from realesrgan import RealESRGANer
 
